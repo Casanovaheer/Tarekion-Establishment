@@ -1,0 +1,2005 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Al-Ma'dan Fleet · Business Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=Noto+Kufi+Arabic:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+/* ═══════════════════════════════════════════════
+   DESIGN SYSTEM — Al-Ma'dan Fleet Dashboard
+   Aesthetic: Industrial-Luxury / Executive Dark
+   ═══════════════════════════════════════════════ */
+:root {
+  --bg-base:      #0b0f1a;
+  --bg-surface:   #111827;
+  --bg-card:      #1a2234;
+  --bg-card2:     #1e2a40;
+  --bg-input:     #151e2e;
+  --border:       #2a3a56;
+  --border-light: #344a6a;
+  --text-primary: #e8edf5;
+  --text-secondary:#8fa3c4;
+  --text-muted:   #4a6080;
+  --accent:       #f0a500;
+  --accent-dim:   #c07800;
+  --accent-glow:  rgba(240,165,0,0.15);
+  --green:        #22c55e;
+  --green-dim:    rgba(34,197,94,0.12);
+  --red:          #ef4444;
+  --red-dim:      rgba(239,68,68,0.12);
+  --yellow:       #eab308;
+  --yellow-dim:   rgba(234,179,8,0.12);
+  --blue:         #3b82f6;
+  --blue-dim:     rgba(59,130,246,0.12);
+  --nav-w:        240px;
+  --radius:       12px;
+  --radius-sm:    8px;
+  --shadow:       0 4px 24px rgba(0,0,0,0.4);
+  --shadow-card:  0 2px 12px rgba(0,0,0,0.3);
+  --font-display: 'Syne', sans-serif;
+  --font-mono:    'DM Mono', monospace;
+  --font-ar:      'Noto Kufi Arabic', sans-serif;
+  --transition:   0.2s cubic-bezier(0.4,0,0.2,1);
+}
+[data-theme="light"] {
+  --bg-base:      #f0f3f8;
+  --bg-surface:   #ffffff;
+  --bg-card:      #ffffff;
+  --bg-card2:     #f7f9fc;
+  --bg-input:     #f0f3f8;
+  --border:       #d1dbe8;
+  --border-light: #b8c8da;
+  --text-primary: #0f1e35;
+  --text-secondary:#4a6080;
+  --text-muted:   #8fa3c4;
+  --accent:       #d48800;
+  --accent-dim:   #b06e00;
+  --accent-glow:  rgba(212,136,0,0.1);
+  --shadow:       0 4px 24px rgba(0,0,0,0.08);
+  --shadow-card:  0 2px 8px rgba(0,0,0,0.06);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--font-display);
+  background:var(--bg-base);
+  color:var(--text-primary);
+  min-height:100vh;
+  display:flex;
+  overflow-x:hidden;
+}
+
+/* ── SIDEBAR ── */
+#sidebar{
+  width:var(--nav-w);
+  background:var(--bg-surface);
+  border-right:1px solid var(--border);
+  display:flex;
+  flex-direction:column;
+  position:fixed;
+  top:0;left:0;
+  height:100vh;
+  z-index:100;
+  transition:transform var(--transition);
+}
+.sidebar-logo{
+  padding:24px 20px 20px;
+  border-bottom:1px solid var(--border);
+}
+.logo-mark{
+  font-size:20px;font-weight:800;
+  letter-spacing:-0.5px;
+  color:var(--accent);
+  line-height:1;
+}
+.logo-sub{
+  font-size:10px;
+  color:var(--text-muted);
+  letter-spacing:2px;
+  text-transform:uppercase;
+  margin-top:3px;
+  font-family:var(--font-mono);
+}
+.nav-section{
+  padding:12px 10px 4px;
+  font-size:9px;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  color:var(--text-muted);
+  font-family:var(--font-mono);
+}
+.nav-item{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 16px;
+  margin:1px 8px;
+  border-radius:var(--radius-sm);
+  cursor:pointer;
+  font-size:13px;font-weight:600;
+  color:var(--text-secondary);
+  transition:all var(--transition);
+  border:1px solid transparent;
+}
+.nav-item:hover{
+  background:var(--bg-card);
+  color:var(--text-primary);
+}
+.nav-item.active{
+  background:var(--accent-glow);
+  border-color:var(--accent);
+  color:var(--accent);
+}
+.nav-icon{font-size:16px;width:20px;text-align:center}
+.nav-badge{
+  margin-left:auto;
+  background:var(--red);
+  color:#fff;
+  font-size:10px;
+  font-family:var(--font-mono);
+  padding:1px 5px;
+  border-radius:10px;
+  font-weight:500;
+}
+.sidebar-footer{
+  margin-top:auto;
+  padding:16px;
+  border-top:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.theme-btn{
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  color:var(--text-secondary);
+  padding:6px 10px;
+  border-radius:6px;
+  cursor:pointer;
+  font-size:14px;
+  transition:all var(--transition);
+  flex:1;
+  font-family:var(--font-display);
+  font-weight:600;
+  font-size:11px;
+}
+.theme-btn:hover{border-color:var(--accent);color:var(--accent)}
+#menu-toggle{
+  display:none;
+  position:fixed;
+  top:16px;left:16px;
+  z-index:200;
+  background:var(--bg-surface);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:8px 10px;
+  cursor:pointer;
+  font-size:18px;
+  color:var(--text-primary);
+}
+
+/* ── MAIN CONTENT ── */
+#main{
+  margin-left:var(--nav-w);
+  flex:1;
+  min-height:100vh;
+  background:var(--bg-base);
+}
+.page{display:none;padding:28px 32px;animation:fadeIn 0.3s ease}
+.page.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* ── PAGE HEADER ── */
+.page-header{
+  display:flex;align-items:flex-start;
+  justify-content:space-between;
+  margin-bottom:28px;
+  flex-wrap:wrap;gap:12px;
+}
+.page-title{font-size:28px;font-weight:800;letter-spacing:-0.5px}
+.page-subtitle{
+  font-size:13px;color:var(--text-muted);
+  font-family:var(--font-mono);
+  margin-top:2px;
+}
+.ar-label{
+  font-family:var(--font-ar);
+  font-size:11px;
+  color:var(--text-muted);
+  direction:rtl;
+}
+
+/* ── CARDS ── */
+.card{
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:20px 24px;
+  box-shadow:var(--shadow-card);
+}
+.card-title{
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  color:var(--text-muted);
+  font-family:var(--font-mono);
+  margin-bottom:12px;
+}
+
+/* ── KPI GRID ── */
+.kpi-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+  gap:16px;
+  margin-bottom:24px;
+}
+.kpi{
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:20px;
+  position:relative;
+  overflow:hidden;
+  transition:border-color var(--transition);
+}
+.kpi::before{
+  content:'';
+  position:absolute;
+  top:0;left:0;right:0;
+  height:3px;
+  background:var(--accent);
+  opacity:0.6;
+}
+.kpi.green::before{background:var(--green)}
+.kpi.red::before{background:var(--red)}
+.kpi.blue::before{background:var(--blue)}
+.kpi:hover{border-color:var(--border-light)}
+.kpi-label{
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  color:var(--text-muted);
+  font-family:var(--font-mono);
+}
+.kpi-value{
+  font-size:26px;font-weight:800;
+  letter-spacing:-1px;
+  margin:6px 0 2px;
+  color:var(--text-primary);
+}
+.kpi-sub{
+  font-size:11px;
+  color:var(--text-muted);
+  font-family:var(--font-mono);
+}
+.kpi-icon{
+  position:absolute;
+  right:16px;top:16px;
+  font-size:28px;
+  opacity:0.12;
+}
+
+/* ── GRIDS & LAYOUTS ── */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.chart-wrap{position:relative;height:280px}
+
+/* ── FORMS ── */
+.form-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+  gap:14px;
+  margin-bottom:16px;
+}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-group label{
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+  color:var(--text-muted);
+  font-family:var(--font-mono);
+}
+.form-group input,
+.form-group select,
+.form-group textarea{
+  background:var(--bg-input);
+  border:1px solid var(--border);
+  color:var(--text-primary);
+  padding:9px 12px;
+  border-radius:var(--radius-sm);
+  font-family:var(--font-display);
+  font-size:13px;
+  font-weight:500;
+  transition:border-color var(--transition);
+  outline:none;
+}
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus{
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px var(--accent-glow);
+}
+.form-group select option{background:var(--bg-surface)}
+.form-group textarea{resize:vertical;min-height:70px}
+
+/* ── BUTTONS ── */
+.btn{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:9px 18px;
+  border-radius:var(--radius-sm);
+  font-family:var(--font-display);
+  font-size:12px;font-weight:700;
+  letter-spacing:0.5px;
+  cursor:pointer;
+  border:1px solid transparent;
+  transition:all var(--transition);
+  text-decoration:none;
+}
+.btn-primary{
+  background:var(--accent);
+  color:#0b0f1a;
+}
+.btn-primary:hover{background:var(--accent-dim);transform:translateY(-1px)}
+.btn-ghost{
+  background:transparent;
+  border-color:var(--border);
+  color:var(--text-secondary);
+}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+.btn-danger{background:var(--red-dim);border-color:var(--red);color:var(--red)}
+.btn-danger:hover{background:var(--red);color:#fff}
+.btn-success{background:var(--green-dim);border-color:var(--green);color:var(--green)}
+.btn-success:hover{background:var(--green);color:#fff}
+.btn-sm{padding:5px 12px;font-size:11px}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;border-radius:var(--radius);border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{
+  background:var(--bg-card2);
+  padding:10px 14px;
+  text-align:left;
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+  color:var(--text-muted);
+  font-family:var(--font-mono);
+  white-space:nowrap;
+  border-bottom:1px solid var(--border);
+}
+tbody td{
+  padding:11px 14px;
+  border-bottom:1px solid var(--border);
+  color:var(--text-secondary);
+  vertical-align:middle;
+}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--bg-card2);color:var(--text-primary)}
+.mono{font-family:var(--font-mono)}
+.amount{font-family:var(--font-mono);font-weight:600;color:var(--text-primary)}
+.amount.positive{color:var(--green)}
+.amount.negative{color:var(--red)}
+.amount.pending{color:var(--yellow)}
+
+/* ── BADGES ── */
+.badge{
+  display:inline-block;
+  padding:2px 8px;
+  border-radius:20px;
+  font-size:10px;
+  font-weight:700;
+  font-family:var(--font-mono);
+  letter-spacing:0.5px;
+}
+.badge-green{background:var(--green-dim);color:var(--green);border:1px solid rgba(34,197,94,0.3)}
+.badge-red{background:var(--red-dim);color:var(--red);border:1px solid rgba(239,68,68,0.3)}
+.badge-yellow{background:var(--yellow-dim);color:var(--yellow);border:1px solid rgba(234,179,8,0.3)}
+.badge-blue{background:var(--blue-dim);color:var(--blue);border:1px solid rgba(59,130,246,0.3)}
+.badge-gray{background:rgba(100,100,100,0.15);color:var(--text-muted);border:1px solid var(--border)}
+
+/* ── TABS ── */
+.tabs{display:flex;gap:4px;margin-bottom:20px;border-bottom:1px solid var(--border);padding-bottom:0}
+.tab{
+  padding:8px 16px 10px;
+  font-size:12px;font-weight:700;
+  color:var(--text-muted);
+  cursor:pointer;
+  border-bottom:2px solid transparent;
+  margin-bottom:-1px;
+  transition:all var(--transition);
+  letter-spacing:0.5px;
+}
+.tab:hover{color:var(--text-primary)}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+
+/* ── ALERTS ── */
+.alert-bar{
+  border-radius:var(--radius-sm);
+  padding:12px 16px;
+  margin-bottom:12px;
+  font-size:13px;
+  display:flex;align-items:center;gap:10px;
+}
+.alert-bar.info{background:var(--blue-dim);border:1px solid rgba(59,130,246,0.3);color:var(--blue)}
+.alert-bar.warning{background:var(--yellow-dim);border:1px solid rgba(234,179,8,0.3);color:var(--yellow)}
+.alert-bar.danger{background:var(--red-dim);border:1px solid rgba(239,68,68,0.3);color:var(--red)}
+.alert-bar.success{background:var(--green-dim);border:1px solid rgba(34,197,94,0.3);color:var(--green)}
+
+/* ── VEHICLE CARDS ── */
+.vehicle-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-bottom:24px}
+.vehicle-card{
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:20px;
+  cursor:pointer;
+  transition:all var(--transition);
+  position:relative;
+}
+.vehicle-card:hover,.vehicle-card.active{border-color:var(--accent);box-shadow:0 0 20px var(--accent-glow)}
+.vehicle-card .vc-icon{font-size:36px;margin-bottom:10px}
+.vehicle-card .vc-name{font-size:16px;font-weight:800}
+.vehicle-card .vc-type{font-size:11px;color:var(--text-muted);font-family:var(--font-mono)}
+
+/* ── PROGRESS / STATUS ── */
+.progress-bar{
+  height:6px;
+  background:var(--border);
+  border-radius:3px;
+  overflow:hidden;
+  margin-top:6px;
+}
+.progress-fill{
+  height:100%;
+  border-radius:3px;
+  transition:width 0.6s ease;
+}
+.progress-fill.green{background:var(--green)}
+.progress-fill.yellow{background:var(--yellow)}
+.progress-fill.red{background:var(--red)}
+
+/* ── DRIVER PROFILE ── */
+.driver-card{
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:24px;
+}
+.driver-avatar{
+  width:64px;height:64px;
+  border-radius:50%;
+  background:linear-gradient(135deg,var(--accent) 0%,var(--accent-dim) 100%);
+  display:flex;align-items:center;justify-content:center;
+  font-size:24px;font-weight:800;
+  color:#0b0f1a;
+  margin-bottom:12px;
+}
+
+/* ── MODAL ── */
+.modal-overlay{
+  display:none;
+  position:fixed;inset:0;
+  background:rgba(0,0,0,0.7);
+  backdrop-filter:blur(4px);
+  z-index:999;
+  align-items:center;justify-content:center;
+}
+.modal-overlay.open{display:flex}
+.modal{
+  background:var(--bg-surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  width:min(600px,95vw);
+  max-height:90vh;
+  overflow-y:auto;
+  padding:28px;
+  box-shadow:0 20px 60px rgba(0,0,0,0.5);
+}
+.modal-header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:20px;
+}
+.modal-title{font-size:18px;font-weight:800}
+.modal-close{
+  background:none;border:none;
+  color:var(--text-muted);
+  font-size:20px;cursor:pointer;
+  transition:color var(--transition);
+}
+.modal-close:hover{color:var(--red)}
+
+/* ── DATE FILTER ── */
+.date-filter{
+  display:flex;gap:6px;flex-wrap:wrap;
+  align-items:center;
+}
+.filter-pill{
+  padding:5px 12px;
+  border:1px solid var(--border);
+  border-radius:20px;
+  font-size:11px;font-weight:700;
+  cursor:pointer;
+  color:var(--text-muted);
+  transition:all var(--transition);
+  font-family:var(--font-mono);
+}
+.filter-pill:hover,.filter-pill.active{
+  border-color:var(--accent);
+  color:var(--accent);
+  background:var(--accent-glow);
+}
+
+/* ── DIVIDER ── */
+.divider{height:1px;background:var(--border);margin:20px 0}
+.section-gap{height:20px}
+
+/* ── PAYSLIP ── */
+.payslip{
+  background:var(--bg-card);
+  border:2px solid var(--border);
+  border-radius:var(--radius);
+  max-width:520px;
+  margin:0 auto;
+}
+.payslip-header{
+  background:linear-gradient(135deg,#1a2234,#111827);
+  border-bottom:2px solid var(--accent);
+  padding:20px 24px;
+}
+.payslip-row{
+  display:flex;justify-content:space-between;
+  padding:10px 24px;
+  border-bottom:1px solid var(--border);
+  font-size:13px;
+}
+.payslip-total{
+  display:flex;justify-content:space-between;
+  padding:14px 24px;
+  font-size:16px;font-weight:800;
+  background:var(--accent-glow);
+  border-top:2px solid var(--accent);
+}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+  #sidebar{transform:translateX(-100%)}
+  #sidebar.open{transform:none}
+  #menu-toggle{display:block}
+  #main{margin-left:0}
+  .page{padding:20px 16px}
+  .grid-2,.grid-3{grid-template-columns:1fr}
+  .kpi-grid{grid-template-columns:1fr 1fr}
+  .page-title{font-size:22px}
+  .sidebar-overlay{
+    display:none;
+    position:fixed;inset:0;
+    background:rgba(0,0,0,0.5);
+    z-index:99;
+  }
+  .sidebar-overlay.open{display:block}
+}
+@media(max-width:400px){
+  .kpi-grid{grid-template-columns:1fr}
+}
+
+/* ── UTILITY ── */
+.flex{display:flex}.gap-2{gap:8px}.gap-3{gap:12px}.items-center{align-items:center}
+.justify-between{justify-content:space-between}.flex-wrap{flex-wrap:wrap}
+.mt-4{margin-top:16px}.mb-4{margin-bottom:16px}.mb-3{margin-bottom:12px}
+.text-right{text-align:right}
+.text-accent{color:var(--accent)}
+.text-green{color:var(--green)}
+.text-red{color:var(--red)}
+.text-muted{color:var(--text-muted)}
+.font-mono{font-family:var(--font-mono)}
+.bold{font-weight:700}
+.empty-state{
+  text-align:center;padding:40px;
+  color:var(--text-muted);font-size:13px;
+}
+.empty-state .empty-icon{font-size:40px;margin-bottom:8px;opacity:0.4}
+</style>
+</head>
+<body>
+
+<button id="menu-toggle" onclick="toggleSidebar()">☰</button>
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+<!-- SIDEBAR -->
+<nav id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">⚙ AL-MA'DAN</div>
+    <div class="logo-sub">Fleet & Equipment · KSA</div>
+  </div>
+
+  <div class="nav-section">Main</div>
+  <div class="nav-item active" onclick="showPage('dashboard')">
+    <span class="nav-icon">📊</span> Dashboard
+  </div>
+
+  <div class="nav-section">Operations</div>
+  <div class="nav-item" onclick="showPage('income')">
+    <span class="nav-icon">💰</span> Income
+  </div>
+  <div class="nav-item" onclick="showPage('expenses')">
+    <span class="nav-icon">📉</span> Expenses
+  </div>
+  <div class="nav-item" onclick="showPage('maintenance')">
+    <span class="nav-icon">🔧</span> Maintenance
+  </div>
+
+  <div class="nav-section">Finance</div>
+  <div class="nav-item" onclick="showPage('receivables')">
+    <span class="nav-icon">📋</span> Receivables
+    <span class="nav-badge" id="debt-badge">!</span>
+  </div>
+
+  <div class="nav-section">HR</div>
+  <div class="nav-item" onclick="showPage('payroll')">
+    <span class="nav-icon">👷</span> Payroll
+  </div>
+
+  <div class="nav-section">Data</div>
+  <div class="nav-item" onclick="exportBackup()">
+    <span class="nav-icon">💾</span> Backup Data
+  </div>
+  <div class="nav-item" onclick="document.getElementById('importFile').click()">
+    <span class="nav-icon">📂</span> Restore Data
+  </div>
+  <input type="file" id="importFile" accept=".json" style="display:none" onchange="importBackup(event)">
+
+  <div class="sidebar-footer">
+    <button class="theme-btn" onclick="toggleTheme()">☀ / ☾ Theme</button>
+  </div>
+</nav>
+
+<!-- MAIN CONTENT -->
+<div id="main">
+
+<!-- ═══════════════════════ DASHBOARD PAGE ═══════════════════════ -->
+<div id="page-dashboard" class="page active">
+  <div class="page-header">
+    <div>
+      <div class="page-title">Dashboard <span class="text-accent">Overview</span></div>
+      <div class="page-subtitle">BOSS VIEW · EXECUTIVE SUMMARY · <span id="dash-date"></span></div>
+    </div>
+    <div class="date-filter" id="dash-filter">
+      <span class="filter-pill active" data-range="month" onclick="setDashFilter(this,'month')">This Month</span>
+      <span class="filter-pill" data-range="quarter" onclick="setDashFilter(this,'quarter')">Quarter</span>
+      <span class="filter-pill" data-range="year" onclick="setDashFilter(this,'year')">YTD</span>
+      <span class="filter-pill" data-range="all" onclick="setDashFilter(this,'all')">All Time</span>
+    </div>
+  </div>
+
+  <div class="kpi-grid" id="dash-kpis"></div>
+
+  <div class="grid-2 mb-4">
+    <div class="card">
+      <div class="card-title">Monthly Income vs Expenses</div>
+      <div class="chart-wrap"><canvas id="chart-monthly"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Income by Vehicle</div>
+      <div class="chart-wrap"><canvas id="chart-vehicles"></canvas></div>
+    </div>
+  </div>
+
+  <div class="grid-2 mb-4">
+    <div class="card">
+      <div class="card-title">Receivables Aging</div>
+      <div class="chart-wrap"><canvas id="chart-aging"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Expense Breakdown</div>
+      <div class="chart-wrap"><canvas id="chart-expenses"></canvas></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Recent Activity</div>
+    <div id="recent-activity"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ INCOME PAGE ═══════════════════════ -->
+<div id="page-income" class="page">
+  <div class="page-header">
+    <div>
+      <div class="page-title">Income <span class="text-accent">Tracker</span></div>
+      <div class="page-subtitle">RENTAL INVOICES · ALL VEHICLES</div>
+    </div>
+    <div class="flex gap-2">
+      <button class="btn btn-ghost btn-sm" onclick="exportTableCSV('income-table','Income')">⬇ Export CSV</button>
+      <button class="btn btn-primary btn-sm" onclick="openModal('income-modal')">+ Add Invoice</button>
+    </div>
+  </div>
+
+  <!-- Summary per vehicle -->
+  <div class="vehicle-cards" id="income-vehicle-summary"></div>
+
+  <div class="card">
+    <div class="flex justify-between items-center mb-3 flex-wrap gap-2">
+      <div class="card-title" style="margin:0">All Invoices</div>
+      <div class="flex gap-2">
+        <select class="form-group" style="padding:5px 10px;font-size:12px" onchange="filterIncomeByVehicle(this.value)">
+          <option value="">All Vehicles</option>
+          <option>JCB</option><option>Bobcat</option><option>Lowbed</option>
+        </select>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table id="income-table">
+        <thead><tr>
+          <th>Invoice #</th><th>Date</th><th>Vehicle</th><th>Customer</th>
+          <th>Type</th><th>Gross</th><th>Deductions</th><th>Net</th><th>Actions</th>
+        </tr></thead>
+        <tbody id="income-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Income Modal -->
+<div class="modal-overlay" id="income-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">New Rental Invoice</div>
+      <button class="modal-close" onclick="closeModal('income-modal')">✕</button>
+    </div>
+    <div class="form-grid">
+      <div class="form-group"><label>Invoice #</label><input id="i-inv" placeholder="e.g. 1009"></div>
+      <div class="form-group"><label>Date</label><input type="date" id="i-date"></div>
+      <div class="form-group"><label>Vehicle</label>
+        <select id="i-vehicle"><option>JCB</option><option>Bobcat</option><option>Lowbed</option></select>
+      </div>
+      <div class="form-group"><label>Customer Name</label><input id="i-customer" placeholder="Company / Person"></div>
+      <div class="form-group"><label>Rental Type</label>
+        <select id="i-type"><option>Monthly Contract</option><option>Daily Rate</option></select>
+      </div>
+      <div class="form-group"><label>Gross Amount (SAR)</label><input type="number" id="i-gross" placeholder="0.00" oninput="calcNet()"></div>
+      <div class="form-group"><label>Fuel Deduction (SAR)</label><input type="number" id="i-fuel" value="0" oninput="calcNet()"></div>
+      <div class="form-group"><label>Non-working Days Ded. (SAR)</label><input type="number" id="i-nwd" value="0" oninput="calcNet()"></div>
+      <div class="form-group"><label>Parts Deduction (SAR)</label><input type="number" id="i-parts" value="0" oninput="calcNet()"></div>
+      <div class="form-group"><label>Other Deduction (SAR)</label><input type="number" id="i-other" value="0" oninput="calcNet()"></div>
+    </div>
+    <div class="alert-bar info" style="margin-bottom:12px">
+      <strong>NET AMOUNT:</strong>&nbsp; <span id="i-net-display" style="font-size:18px;font-weight:800;font-family:var(--font-mono)">SAR 0.00</span>
+    </div>
+    <div class="form-group"><label>Notes</label><textarea id="i-notes" placeholder="Contract period, site location, etc."></textarea></div>
+    <div class="flex gap-2 mt-4">
+      <button class="btn btn-primary" onclick="saveIncome()">💾 Save Invoice</button>
+      <button class="btn btn-ghost" onclick="closeModal('income-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ EXPENSES PAGE ═══════════════════════ -->
+<div id="page-expenses" class="page">
+  <div class="page-header">
+    <div>
+      <div class="page-title">Expense <span class="text-accent">Tracker</span></div>
+      <div class="page-subtitle">ALL BUSINESS COSTS · MONTHLY & YEARLY</div>
+    </div>
+    <div class="flex gap-2">
+      <button class="btn btn-ghost btn-sm" onclick="exportTableCSV('expense-table','Expenses')">⬇ CSV</button>
+      <button class="btn btn-primary btn-sm" onclick="openModal('expense-modal')">+ Add Expense</button>
+    </div>
+  </div>
+
+  <div class="kpi-grid" id="expense-summary-kpis"></div>
+
+  <div class="card">
+    <div class="card-title">Expense Log</div>
+    <div class="table-wrap">
+      <table id="expense-table">
+        <thead><tr>
+          <th>Date</th><th>Category</th><th>Vehicle / Scope</th>
+          <th>Description</th><th>Amount (SAR)</th><th>Actions</th>
+        </tr></thead>
+        <tbody id="expense-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Expense Modal -->
+<div class="modal-overlay" id="expense-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Log Expense</div>
+      <button class="modal-close" onclick="closeModal('expense-modal')">✕</button>
+    </div>
+    <div class="form-grid">
+      <div class="form-group"><label>Date</label><input type="date" id="e-date"></div>
+      <div class="form-group"><label>Category</label>
+        <select id="e-cat">
+          <option>Fuel</option><option>Maintenance</option><option>Driver Salary</option>
+          <option>Insurance</option><option>Government Fees</option><option>Miscellaneous</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Vehicle / Scope</label>
+        <select id="e-vehicle">
+          <option>General</option><option>JCB</option><option>Bobcat</option><option>Lowbed</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Amount (SAR)</label><input type="number" id="e-amount" placeholder="0.00"></div>
+    </div>
+    <div class="form-group" style="margin-bottom:12px"><label>Description</label>
+      <textarea id="e-desc" placeholder="Details about the expense..."></textarea>
+    </div>
+    <div class="flex gap-2 mt-4">
+      <button class="btn btn-primary" onclick="saveExpense()">💾 Save Expense</button>
+      <button class="btn btn-ghost" onclick="closeModal('expense-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ MAINTENANCE PAGE ═══════════════════════ -->
+<div id="page-maintenance" class="page">
+  <div class="page-header">
+    <div>
+      <div class="page-title">Maintenance <span class="text-accent">Log</span></div>
+      <div class="page-subtitle">PARTS & SERVICE TRACKING</div>
+    </div>
+    <div class="flex gap-2">
+      <button class="btn btn-ghost btn-sm" onclick="exportTableCSV('maint-table','Maintenance')">⬇ CSV</button>
+      <button class="btn btn-primary btn-sm" onclick="openModal('maint-modal')">+ Log Part</button>
+    </div>
+  </div>
+
+  <div class="vehicle-cards">
+    <div class="vehicle-card active" id="vm-jcb" onclick="setMaintVehicle('JCB')">
+      <div class="vc-icon">🦺</div>
+      <div class="vc-name">JCB</div>
+      <div class="vc-type">Excavator</div>
+    </div>
+    <div class="vehicle-card" id="vm-bobcat" onclick="setMaintVehicle('Bobcat')">
+      <div class="vc-icon">🚜</div>
+      <div class="vc-name">Bobcat</div>
+      <div class="vc-type">Skid Steer</div>
+    </div>
+    <div class="vehicle-card" id="vm-lowbed" onclick="setMaintVehicle('Lowbed')">
+      <div class="vc-icon">🚛</div>
+      <div class="vc-name">Lowbed</div>
+      <div class="vc-type">Transport Truck</div>
+    </div>
+  </div>
+
+  <!-- Status grid for selected vehicle -->
+  <div id="parts-status-grid" class="mb-4"></div>
+
+  <div class="card">
+    <div class="flex justify-between items-center mb-3">
+      <div class="card-title" style="margin:0">Service History — <span id="maint-vehicle-label">JCB</span></div>
+    </div>
+    <div class="table-wrap">
+      <table id="maint-table">
+        <thead><tr>
+          <th>Date</th><th>Part</th><th>Vehicle</th><th>Cost (SAR)</th>
+          <th>Next Due</th><th>Status</th><th>Notes</th><th>Actions</th>
+        </tr></thead>
+        <tbody id="maint-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Maintenance Modal -->
+<div class="modal-overlay" id="maint-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Log Part / Service</div>
+      <button class="modal-close" onclick="closeModal('maint-modal')">✕</button>
+    </div>
+    <div class="form-grid">
+      <div class="form-group"><label>Date Changed</label><input type="date" id="m-date"></div>
+      <div class="form-group"><label>Vehicle</label>
+        <select id="m-vehicle"><option>JCB</option><option>Bobcat</option><option>Lowbed</option></select>
+      </div>
+      <div class="form-group"><label>Part Name</label>
+        <select id="m-part">
+          <option>Engine Oil Filter</option><option>Hydraulic Filter</option>
+          <option>Air Filter</option><option>Fuel Filter</option>
+          <option>Engine Oil</option><option>Hydraulic Oil</option>
+          <option>Tyres</option><option>Battery</option>
+          <option>Belts</option><option>Custom Part</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Custom Part Name</label><input id="m-custom" placeholder="If Custom Part selected"></div>
+      <div class="form-group"><label>Cost (SAR)</label><input type="number" id="m-cost" placeholder="0.00"></div>
+      <div class="form-group"><label>Next Change Due</label><input id="m-next" placeholder="e.g. 3 months / 500 hrs"></div>
+    </div>
+    <div class="form-group mb-4"><label>Notes</label><textarea id="m-notes" placeholder="Supplier, part number, technician..."></textarea></div>
+    <div class="flex gap-2">
+      <button class="btn btn-primary" onclick="saveMaintenance()">💾 Save Record</button>
+      <button class="btn btn-ghost" onclick="closeModal('maint-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ RECEIVABLES PAGE ═══════════════════════ -->
+<div id="page-receivables" class="page">
+  <div class="page-header">
+    <div>
+      <div class="page-title">Receivables <span class="text-accent">/ Debt</span></div>
+      <div class="page-subtitle">OUTSTANDING CUSTOMER BALANCES</div>
+    </div>
+    <div class="flex gap-2">
+      <button class="btn btn-ghost btn-sm" onclick="exportTableCSV('rec-table','Receivables')">⬇ CSV</button>
+      <button class="btn btn-primary btn-sm" onclick="openModal('rec-modal')">+ New Invoice</button>
+    </div>
+  </div>
+
+  <div class="kpi-grid" id="rec-kpis"></div>
+
+  <div class="card">
+    <div class="card-title">Customer Invoices</div>
+    <div class="table-wrap">
+      <table id="rec-table">
+        <thead><tr>
+          <th>Invoice #</th><th>Date</th><th>Customer</th><th>Invoice Amt</th>
+          <th>Paid</th><th>Balance Due</th><th>Status</th><th>Actions</th>
+        </tr></thead>
+        <tbody id="rec-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Receivables Modal -->
+<div class="modal-overlay" id="rec-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Add Receivable Invoice</div>
+      <button class="modal-close" onclick="closeModal('rec-modal')">✕</button>
+    </div>
+    <div class="form-grid">
+      <div class="form-group"><label>Invoice #</label><input id="r-inv" placeholder="e.g. INV-001"></div>
+      <div class="form-group"><label>Invoice Date</label><input type="date" id="r-date"></div>
+      <div class="form-group"><label>Customer Name</label><input id="r-customer" placeholder="Company / Person"></div>
+      <div class="form-group"><label>Invoice Amount (SAR)</label><input type="number" id="r-amount" placeholder="0.00"></div>
+      <div class="form-group"><label>Amount Paid (SAR)</label><input type="number" id="r-paid" value="0"></div>
+    </div>
+    <div class="form-group mb-4"><label>Notes</label><textarea id="r-notes" placeholder="Vehicle rented, period, etc."></textarea></div>
+    <div class="flex gap-2">
+      <button class="btn btn-primary" onclick="saveReceivable()">💾 Save</button>
+      <button class="btn btn-ghost" onclick="closeModal('rec-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Payment Modal -->
+<div class="modal-overlay" id="pay-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Record Payment</div>
+      <button class="modal-close" onclick="closeModal('pay-modal')">✕</button>
+    </div>
+    <div id="pay-modal-body"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ PAYROLL PAGE ═══════════════════════ -->
+<div id="page-payroll" class="page">
+  <div class="page-header">
+    <div>
+      <div class="page-title">Driver <span class="text-accent">Payroll</span></div>
+      <div class="page-subtitle">ATTENDANCE · SALARY · PAYSLIPS</div>
+    </div>
+    <button class="btn btn-primary btn-sm" onclick="openModal('payroll-modal')">+ Log Month</button>
+  </div>
+
+  <div class="grid-2 mb-4" id="driver-profiles"></div>
+
+  <div class="card">
+    <div class="flex justify-between items-center mb-3 flex-wrap gap-2">
+      <div class="card-title" style="margin:0">Salary History</div>
+      <div class="flex gap-2">
+        <button class="btn btn-ghost btn-sm" onclick="exportTableCSV('payroll-table','Payroll')">⬇ CSV</button>
+        <select id="driver-filter" class="form-group" style="padding:5px 10px;font-size:12px" onchange="renderPayrollTable()">
+          <option value="">All Drivers</option>
+        </select>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table id="payroll-table">
+        <thead><tr>
+          <th>Month</th><th>Driver</th><th>Working Days</th><th>Absent</th>
+          <th>Base Salary</th><th>Overtime</th><th>Deductions</th><th>Net Pay</th><th>Actions</th>
+        </tr></thead>
+        <tbody id="payroll-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Payroll Modal -->
+<div class="modal-overlay" id="payroll-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Log Monthly Payroll</div>
+      <button class="modal-close" onclick="closeModal('payroll-modal')">✕</button>
+    </div>
+    <div class="form-grid">
+      <div class="form-group"><label>Driver</label>
+        <select id="p-driver" onchange="prefillSalary()"></select>
+      </div>
+      <div class="form-group"><label>Month / Year</label>
+        <input type="month" id="p-month">
+      </div>
+      <div class="form-group"><label>Working Days</label><input type="number" id="p-working" placeholder="26"></div>
+      <div class="form-group"><label>Absent Days</label><input type="number" id="p-absent" value="0" oninput="calcNetSalary()"></div>
+      <div class="form-group"><label>Base Salary (SAR)</label><input type="number" id="p-base" placeholder="0" oninput="calcNetSalary()"></div>
+      <div class="form-group"><label>Overtime Pay (SAR)</label><input type="number" id="p-ot" value="0" oninput="calcNetSalary()"></div>
+      <div class="form-group"><label>Other Deductions (SAR)</label><input type="number" id="p-ded" value="0" oninput="calcNetSalary()"></div>
+    </div>
+    <div class="alert-bar info" style="margin-bottom:12px">
+      <strong>NET SALARY:</strong>&nbsp;
+      <span id="p-net-display" style="font-size:18px;font-weight:800;font-family:var(--font-mono)">SAR 0.00</span>
+    </div>
+    <div class="form-group mb-4"><label>Notes</label><textarea id="p-notes" placeholder="Any remarks..."></textarea></div>
+    <div class="flex gap-2">
+      <button class="btn btn-primary" onclick="savePayroll()">💾 Save</button>
+      <button class="btn btn-ghost" onclick="closeModal('payroll-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Payslip Modal -->
+<div class="modal-overlay" id="payslip-modal">
+  <div class="modal" style="max-width:540px">
+    <div class="modal-header">
+      <div class="modal-title">Payslip</div>
+      <div class="flex gap-2">
+        <button class="btn btn-ghost btn-sm" onclick="window.print()">🖨 Print</button>
+        <button class="modal-close" onclick="closeModal('payslip-modal')">✕</button>
+      </div>
+    </div>
+    <div id="payslip-content"></div>
+  </div>
+</div>
+
+</div><!-- end #main -->
+
+<script>
+/* ═══════════════════════════════════════════════
+   AL-MA'DAN FLEET DASHBOARD — CORE ENGINE
+   ═══════════════════════════════════════════════ */
+
+// ── DATA STORE ──────────────────────────────────
+const STORE_KEY = 'alMadanData_v2';
+let DB = {
+  income:      [],
+  expenses:    [],
+  maintenance: [],
+  receivables: [],
+  payroll:     [],
+  drivers: [
+    {id:'D1', name:'Ahmed Al-Rashidi', contact:'0501234567', hireDate:'2023-01-01', baseSalary:3200},
+    {id:'D2', name:'Mohammed Al-Ghamdi', contact:'0557654321', hireDate:'2022-06-15', baseSalary:3000}
+  ]
+};
+
+function saveDB(){localStorage.setItem(STORE_KEY,JSON.stringify(DB))}
+function loadDB(){
+  const raw=localStorage.getItem(STORE_KEY);
+  if(raw){
+    try{
+      const parsed=JSON.parse(raw);
+      DB={...DB,...parsed};
+    }catch(e){}
+  }
+}
+
+// ── SAMPLE DATA ─────────────────────────────────
+function preloadSampleData(){
+  if(DB.income.length>0) return; // already loaded
+
+  const today = new Date().toISOString().slice(0,10);
+  const dec20 = '2025-12-20';
+
+  DB.income = [
+    {id:uid(),invNo:'1008',date:dec20,vehicle:'JCB',customer:'Tarekion Establishment',
+     type:'Monthly Contract',gross:11500,fuel:1533,nwd:383,parts:0,other:0,net:9584,notes:'Dec 20 – Jan 20 rental period'},
+    {id:uid(),invNo:'1005',date:'2025-11-01',vehicle:'Bobcat',customer:'Al-Hazm Contracting',
+     type:'Monthly Contract',gross:8500,fuel:800,nwd:0,parts:200,other:0,net:7500,notes:'Nov rental'},
+    {id:uid(),invNo:'1006',date:'2025-11-15',vehicle:'Lowbed',customer:'Saudi Transport Co.',
+     type:'Daily Rate',gross:4200,fuel:600,nwd:0,parts:0,other:0,net:3600,notes:'3-day haul job'},
+    {id:uid(),invNo:'1007',date:'2025-12-01',vehicle:'JCB',customer:'Rawabi Development',
+     type:'Monthly Contract',gross:11500,fuel:1200,nwd:0,parts:300,other:0,net:10000,notes:'Site clearance project'},
+    {id:uid(),invNo:'1009',date:'2026-01-20',vehicle:'JCB',customer:'Tarekion Establishment',
+     type:'Monthly Contract',gross:11500,fuel:1400,nwd:0,parts:0,other:0,net:10100,notes:'Jan renewal'},
+    {id:uid(),invNo:'1010',date:'2026-01-05',vehicle:'Bobcat',customer:'Al-Hazm Contracting',
+     type:'Monthly Contract',gross:8500,fuel:750,nwd:200,parts:0,other:0,net:7550,notes:'Jan contract'},
+  ];
+
+  DB.expenses = [
+    {id:uid(),date:'2025-12-01',cat:'Fuel',vehicle:'JCB',amount:1533,desc:'Diesel fill - December'},
+    {id:uid(),date:'2025-12-05',cat:'Maintenance',vehicle:'JCB',amount:850,desc:'Hydraulic filter + engine oil change'},
+    {id:uid(),date:'2025-12-01',cat:'Driver Salary',vehicle:'General',amount:3200,desc:'Ahmed salary - December'},
+    {id:uid(),date:'2025-12-01',cat:'Driver Salary',vehicle:'General',amount:3000,desc:'Mohammed salary - December'},
+    {id:uid(),date:'2025-11-10',cat:'Fuel',vehicle:'Bobcat',amount:800,desc:'Diesel fill - November'},
+    {id:uid(),date:'2025-11-15',cat:'Fuel',vehicle:'Lowbed',amount:1200,desc:'Diesel for haul job'},
+    {id:uid(),date:'2025-12-20',cat:'Insurance',vehicle:'General',amount:4500,desc:'Annual fleet insurance renewal'},
+    {id:uid(),date:'2026-01-02',cat:'Government Fees',vehicle:'General',amount:1200,desc:'Istimara renewal - JCB'},
+    {id:uid(),date:'2026-01-05',cat:'Maintenance',vehicle:'Bobcat',amount:620,desc:'Air filter + belt replacement'},
+  ];
+
+  DB.maintenance = [
+    {id:uid(),date:'2025-11-01',vehicle:'JCB',part:'Engine Oil Filter',cost:180,nextDue:'3 months',notes:'Changed at service center'},
+    {id:uid(),date:'2025-11-01',vehicle:'JCB',part:'Engine Oil',cost:320,nextDue:'3 months',notes:'Full synthetic 10W-40'},
+    {id:uid(),date:'2025-10-15',vehicle:'JCB',part:'Hydraulic Filter',cost:420,nextDue:'6 months',notes:''},
+    {id:uid(),date:'2025-09-01',vehicle:'Bobcat',part:'Air Filter',cost:95,nextDue:'3 months',notes:'Dusty site conditions'},
+    {id:uid(),date:'2025-11-20',vehicle:'Bobcat',part:'Belts',cost:280,nextDue:'12 months',notes:'Drive belt replaced'},
+    {id:uid(),date:'2025-08-01',vehicle:'Lowbed',part:'Battery',cost:650,nextDue:'24 months',notes:'Bosch 200Ah'},
+    {id:uid(),date:'2025-10-01',vehicle:'Lowbed',part:'Tyres',cost:3200,nextDue:'24 months',notes:'4 rear tyres replaced'},
+  ];
+
+  DB.receivables = [
+    {id:uid(),invNo:'REC-001',date:'2025-10-01',customer:'Abu Raiyan Trading',
+     amount:35000,paid:0,notes:'Excavator rental 3 months Oct-Dec'},
+    {id:uid(),invNo:'REC-002',date:'2025-11-15',customer:'Al-Nakheel Projects',
+     amount:12000,paid:8000,notes:'Bobcat monthly Nov-Dec'},
+    {id:uid(),invNo:'REC-003',date:'2025-12-01',customer:'Saudi Express Logistics',
+     amount:6500,paid:6500,notes:'Lowbed transport - PAID'},
+    {id:uid(),invNo:'REC-004',date:'2026-01-10',customer:'Tarekion Establishment',
+     amount:9584,paid:5000,notes:'Partial - balance expected end of Jan'},
+  ];
+
+  DB.payroll = [
+    {id:uid(),driverId:'D1',driverName:'Ahmed Al-Rashidi',month:'2025-11',
+     working:26,absent:0,base:3200,overtime:400,deductions:0,net:3600,notes:'On time'},
+    {id:uid(),driverId:'D2',driverName:'Mohammed Al-Ghamdi',month:'2025-11',
+     working:24,absent:2,base:3000,overtime:0,deductions:231,net:2769,notes:'2 days absent'},
+    {id:uid(),driverId:'D1',driverName:'Ahmed Al-Rashidi',month:'2025-12',
+     working:26,absent:0,base:3200,overtime:600,deductions:0,net:3800,notes:'Extra weekend work'},
+    {id:uid(),driverId:'D2',driverName:'Mohammed Al-Ghamdi',month:'2025-12',
+     working:26,absent:0,base:3000,overtime:300,deductions:0,net:3300,notes:''},
+  ];
+
+  saveDB();
+}
+
+// ── UTILITIES ───────────────────────────────────
+function uid(){return Math.random().toString(36).slice(2,10)}
+function fmt(n){return 'SAR '+Number(n||0).toLocaleString('en-SA',{minimumFractionDigits:2,maximumFractionDigits:2})}
+function fmtN(n){return Number(n||0).toLocaleString('en-SA',{minimumFractionDigits:2,maximumFractionDigits:2})}
+function today(){return new Date().toISOString().slice(0,10)}
+function monthYear(d){const dt=new Date(d);return dt.toLocaleDateString('en-SA',{year:'numeric',month:'short'})}
+function getMonth(d){return d?d.slice(0,7):''}
+function currentMonth(){return today().slice(0,7)}
+function currentYear(){return today().slice(0,4)}
+
+// ── NAVIGATION ──────────────────────────────────
+function showPage(name){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>{
+    if(n.getAttribute('onclick')&&n.getAttribute('onclick').includes("'"+name+"'"))
+      n.classList.add('active');
+  });
+  // Render modules
+  if(name==='dashboard') renderDashboard();
+  if(name==='income') renderIncome();
+  if(name==='expenses') renderExpenses();
+  if(name==='maintenance') renderMaintenance();
+  if(name==='receivables') renderReceivables();
+  if(name==='payroll') renderPayroll();
+  closeSidebar();
+}
+
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebar-overlay').classList.toggle('open');
+}
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('open');
+}
+
+function toggleTheme(){
+  const html=document.documentElement;
+  html.dataset.theme = html.dataset.theme==='dark'?'light':'dark';
+  localStorage.setItem('theme',html.dataset.theme);
+  if(window.dashCharts) Object.values(window.dashCharts).forEach(c=>{if(c)c.destroy()});
+  window.dashCharts={};
+  renderDashboard();
+}
+
+// ── MODAL ────────────────────────────────────────
+function openModal(id){document.getElementById(id).classList.add('open')}
+function closeModal(id){document.getElementById(id).classList.remove('open')}
+
+// ── EXPORT CSV ──────────────────────────────────
+function exportTableCSV(tableId, name){
+  const table=document.getElementById(tableId);
+  if(!table) return;
+  let csv=[];
+  for(const row of table.rows){
+    const cells=[...row.cells].map(c=>'"'+c.innerText.replace(/"/g,'""')+'"');
+    csv.push(cells.join(','));
+  }
+  const blob=new Blob([csv.join('\n')],{type:'text/csv'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=name+'_'+today()+'.csv';
+  a.click();
+}
+
+// ── BACKUP / RESTORE ───────────────────────────
+function exportBackup(){
+  const blob=new Blob([JSON.stringify(DB,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='AlMadan_Backup_'+today()+'.json';
+  a.click();
+}
+function importBackup(e){
+  const file=e.target.files[0];
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      DB=JSON.parse(ev.target.result);
+      saveDB();
+      renderDashboard();
+      alert('✅ Data restored successfully!');
+    }catch(err){alert('❌ Invalid backup file')}
+  };
+  reader.readAsText(file);
+}
+
+// ═══════════════════════════════════════════════
+//  MODULE 1 — INCOME
+// ═══════════════════════════════════════════════
+let incomeVehicleFilter='';
+function calcNet(){
+  const g=+document.getElementById('i-gross').value||0;
+  const f=+document.getElementById('i-fuel').value||0;
+  const n=+document.getElementById('i-nwd').value||0;
+  const p=+document.getElementById('i-parts').value||0;
+  const o=+document.getElementById('i-other').value||0;
+  const net=g-f-n-p-o;
+  document.getElementById('i-net-display').textContent=fmt(net);
+}
+
+function saveIncome(){
+  const g=+document.getElementById('i-gross').value||0;
+  const f=+document.getElementById('i-fuel').value||0;
+  const n=+document.getElementById('i-nwd').value||0;
+  const p=+document.getElementById('i-parts').value||0;
+  const o=+document.getElementById('i-other').value||0;
+  DB.income.push({
+    id:uid(),
+    invNo:document.getElementById('i-inv').value||'—',
+    date:document.getElementById('i-date').value||today(),
+    vehicle:document.getElementById('i-vehicle').value,
+    customer:document.getElementById('i-customer').value||'—',
+    type:document.getElementById('i-type').value,
+    gross:g,fuel:f,nwd:n,parts:p,other:o,
+    net:g-f-n-p-o,
+    notes:document.getElementById('i-notes').value
+  });
+  saveDB();
+  closeModal('income-modal');
+  renderIncome();
+  // reset
+  ['i-inv','i-date','i-customer','i-notes'].forEach(id=>document.getElementById(id).value='');
+  ['i-gross','i-fuel','i-nwd','i-parts','i-other'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('i-net-display').textContent='SAR 0.00';
+}
+
+function deleteIncome(id){
+  if(!confirm('Delete this invoice?')) return;
+  DB.income=DB.income.filter(r=>r.id!==id);
+  saveDB(); renderIncome();
+}
+function filterIncomeByVehicle(v){incomeVehicleFilter=v;renderIncome()}
+
+function renderIncome(){
+  const data=DB.income
+    .filter(r=>!incomeVehicleFilter||r.vehicle===incomeVehicleFilter)
+    .sort((a,b)=>b.date.localeCompare(a.date));
+
+  // Vehicle summary cards
+  const vehicles=['JCB','Bobcat','Lowbed'];
+  const icons={'JCB':'🦺','Bobcat':'🚜','Lowbed':'🚛'};
+  const vSummary=document.getElementById('income-vehicle-summary');
+  vSummary.innerHTML=vehicles.map(v=>{
+    const rows=DB.income.filter(r=>r.vehicle===v);
+    const total=rows.reduce((s,r)=>s+r.net,0);
+    const thisMonth=rows.filter(r=>getMonth(r.date)===currentMonth()).reduce((s,r)=>s+r.net,0);
+    return `<div class="vehicle-card">
+      <div class="vc-icon">${icons[v]}</div>
+      <div class="vc-name">${v}</div>
+      <div class="vc-type">All Time: ${fmt(total)}</div>
+      <div style="margin-top:8px;font-size:11px;color:var(--accent);font-family:var(--font-mono)">This Month: ${fmt(thisMonth)}</div>
+    </div>`;
+  }).join('');
+
+  // Table
+  const tbody=document.getElementById('income-tbody');
+  if(!data.length){
+    tbody.innerHTML='<tr><td colspan="9" class="empty-state"><div class="empty-icon">📄</div>No invoices yet</td></tr>';
+    return;
+  }
+  tbody.innerHTML=data.map(r=>`
+    <tr>
+      <td class="mono text-accent">${r.invNo}</td>
+      <td class="mono">${r.date}</td>
+      <td><span class="badge badge-blue">${r.vehicle}</span></td>
+      <td class="bold">${r.customer}</td>
+      <td><span class="badge badge-gray">${r.type}</span></td>
+      <td class="amount">${fmtN(r.gross)}</td>
+      <td class="amount negative">-${fmtN(r.fuel+r.nwd+r.parts+r.other)}</td>
+      <td class="amount positive">${fmtN(r.net)}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="deleteIncome('${r.id}')">🗑</button></td>
+    </tr>`).join('');
+}
+
+// ═══════════════════════════════════════════════
+//  MODULE 2 — EXPENSES
+// ═══════════════════════════════════════════════
+function saveExpense(){
+  DB.expenses.push({
+    id:uid(),
+    date:document.getElementById('e-date').value||today(),
+    cat:document.getElementById('e-cat').value,
+    vehicle:document.getElementById('e-vehicle').value,
+    amount:+document.getElementById('e-amount').value||0,
+    desc:document.getElementById('e-desc').value
+  });
+  saveDB(); closeModal('expense-modal'); renderExpenses();
+  ['e-date','e-amount','e-desc'].forEach(id=>document.getElementById(id).value='');
+}
+
+function deleteExpense(id){
+  if(!confirm('Delete this expense?')) return;
+  DB.expenses=DB.expenses.filter(r=>r.id!==id);
+  saveDB(); renderExpenses();
+}
+
+function renderExpenses(){
+  const data=DB.expenses.sort((a,b)=>b.date.localeCompare(a.date));
+  const cats=['Fuel','Maintenance','Driver Salary','Insurance','Government Fees','Miscellaneous'];
+  const catColors={'Fuel':'#f97316','Maintenance':'#3b82f6','Driver Salary':'#8b5cf6',
+    'Insurance':'#06b6d4','Government Fees':'#ec4899','Miscellaneous':'#6b7280'};
+
+  // KPIs
+  const mtd=data.filter(r=>getMonth(r.date)===currentMonth()).reduce((s,r)=>s+r.amount,0);
+  const ytd=data.filter(r=>r.date.startsWith(currentYear())).reduce((s,r)=>s+r.amount,0);
+  const total=data.reduce((s,r)=>s+r.amount,0);
+  const topCat=cats.reduce((best,c)=>{
+    const sum=data.filter(r=>r.cat===c).reduce((s,r)=>s+r.amount,0);
+    return sum>best.sum?{cat:c,sum}:best;
+  },{cat:'—',sum:0});
+  document.getElementById('expense-summary-kpis').innerHTML=`
+    <div class="kpi red"><span class="kpi-icon">📉</span>
+      <div class="kpi-label">Month to Date</div>
+      <div class="kpi-value">${fmt(mtd)}</div>
+      <div class="kpi-sub">Current month expenses</div>
+    </div>
+    <div class="kpi red"><span class="kpi-icon">📊</span>
+      <div class="kpi-label">Year to Date</div>
+      <div class="kpi-value">${fmt(ytd)}</div>
+      <div class="kpi-sub">${currentYear()} total</div>
+    </div>
+    <div class="kpi"><span class="kpi-icon">💳</span>
+      <div class="kpi-label">All Time</div>
+      <div class="kpi-value">${fmt(total)}</div>
+      <div class="kpi-sub">Total recorded expenses</div>
+    </div>
+    <div class="kpi"><span class="kpi-icon">🏷</span>
+      <div class="kpi-label">Top Category</div>
+      <div class="kpi-value" style="font-size:18px">${topCat.cat}</div>
+      <div class="kpi-sub">${fmt(topCat.sum)}</div>
+    </div>`;
+
+  const tbody=document.getElementById('expense-tbody');
+  if(!data.length){
+    tbody.innerHTML='<tr><td colspan="6" class="empty-state">No expenses yet</td></tr>';
+    return;
+  }
+  tbody.innerHTML=data.map(r=>`
+    <tr>
+      <td class="mono">${r.date}</td>
+      <td><span class="badge" style="background:${catColors[r.cat]||'#666'}22;color:${catColors[r.cat]||'#aaa'};border:1px solid ${catColors[r.cat]||'#666'}44">${r.cat}</span></td>
+      <td>${r.vehicle}</td>
+      <td style="color:var(--text-secondary)">${r.desc||'—'}</td>
+      <td class="amount negative">${fmtN(r.amount)}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="deleteExpense('${r.id}')">🗑</button></td>
+    </tr>`).join('');
+}
+
+// ═══════════════════════════════════════════════
+//  MODULE 3 — MAINTENANCE
+// ═══════════════════════════════════════════════
+let maintVehicle='JCB';
+function setMaintVehicle(v){
+  maintVehicle=v;
+  ['JCB','Bobcat','Lowbed'].forEach(vv=>{
+    document.getElementById('vm-'+vv.toLowerCase()).classList.toggle('active',vv===v);
+  });
+  document.getElementById('maint-vehicle-label').textContent=v;
+  renderMaintenance();
+}
+
+function saveMaintenance(){
+  const partSel=document.getElementById('m-part').value;
+  const part=partSel==='Custom Part'?document.getElementById('m-custom').value||'Custom':partSel;
+  DB.maintenance.push({
+    id:uid(),
+    date:document.getElementById('m-date').value||today(),
+    vehicle:document.getElementById('m-vehicle').value,
+    part,
+    cost:+document.getElementById('m-cost').value||0,
+    nextDue:document.getElementById('m-next').value||'—',
+    notes:document.getElementById('m-notes').value
+  });
+  saveDB(); closeModal('maint-modal'); renderMaintenance();
+}
+
+function deleteMaint(id){
+  if(!confirm('Delete this record?')) return;
+  DB.maintenance=DB.maintenance.filter(r=>r.id!==id);
+  saveDB(); renderMaintenance();
+}
+
+function renderMaintenance(){
+  const data=DB.maintenance
+    .filter(r=>r.vehicle===maintVehicle)
+    .sort((a,b)=>b.date.localeCompare(a.date));
+
+  // Parts status grid
+  const keyParts=['Engine Oil Filter','Hydraulic Filter','Air Filter','Fuel Filter',
+    'Engine Oil','Hydraulic Oil','Tyres','Battery','Belts'];
+  const statusGrid=document.getElementById('parts-status-grid');
+  const grid=keyParts.map(part=>{
+    const records=DB.maintenance.filter(r=>r.vehicle===maintVehicle&&r.part===part);
+    if(!records.length) return `<div class="kpi">
+      <div class="kpi-label">${part}</div>
+      <div class="kpi-value" style="font-size:14px;color:var(--text-muted)">No Record</div>
+      <div class="progress-bar"><div class="progress-fill gray" style="width:0%"></div></div>
+    </div>`;
+    const last=records.sort((a,b)=>b.date.localeCompare(a.date))[0];
+    const daysSince=Math.floor((new Date()-new Date(last.date))/(1000*86400));
+    // Rough health check based on days since
+    let status='green',label='OK',pct=Math.min(100,daysSince/90*100);
+    if(daysSince>120){status='red';label='OVERDUE'}
+    else if(daysSince>75){status='yellow';label='DUE SOON'}
+    return `<div class="kpi">
+      <div class="kpi-label">${part}</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin:6px 0 2px">
+        <div style="font-size:12px;font-weight:700;color:var(--text-primary)">${last.date}</div>
+        <span class="badge badge-${status}">${label}</span>
+      </div>
+      <div style="font-size:11px;color:var(--text-muted);font-family:var(--font-mono)">${daysSince}d ago · Next: ${last.nextDue||'—'}</div>
+      <div class="progress-bar" style="margin-top:8px"><div class="progress-fill ${status}" style="width:${pct}%"></div></div>
+    </div>`;
+  });
+  statusGrid.innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:20px">${grid.join('')}</div>`;
+
+  const tbody=document.getElementById('maint-tbody');
+  if(!data.length){
+    tbody.innerHTML='<tr><td colspan="8" class="empty-state">No maintenance records for '+maintVehicle+'</td></tr>';
+    return;
+  }
+  tbody.innerHTML=data.map(r=>{
+    const days=Math.floor((new Date()-new Date(r.date))/(1000*86400));
+    let badge='badge-green',bLabel='OK';
+    if(days>120){badge='badge-red';bLabel='Overdue'}
+    else if(days>75){badge='badge-yellow';bLabel='Due Soon'}
+    return `<tr>
+      <td class="mono">${r.date}</td>
+      <td class="bold">${r.part}</td>
+      <td><span class="badge badge-blue">${r.vehicle}</span></td>
+      <td class="amount">${fmtN(r.cost)}</td>
+      <td class="mono" style="font-size:12px">${r.nextDue||'—'}</td>
+      <td><span class="badge ${badge}">${bLabel}</span></td>
+      <td style="font-size:12px;color:var(--text-muted)">${r.notes||'—'}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="deleteMaint('${r.id}')">🗑</button></td>
+    </tr>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════
+//  MODULE 4 — RECEIVABLES
+// ═══════════════════════════════════════════════
+function saveReceivable(){
+  const amt=+document.getElementById('r-amount').value||0;
+  const paid=+document.getElementById('r-paid').value||0;
+  DB.receivables.push({
+    id:uid(),
+    invNo:document.getElementById('r-inv').value||'—',
+    date:document.getElementById('r-date').value||today(),
+    customer:document.getElementById('r-customer').value||'—',
+    amount:amt,paid,
+    notes:document.getElementById('r-notes').value,
+    payments:[]
+  });
+  saveDB(); closeModal('rec-modal'); renderReceivables();
+}
+
+function deleteReceivable(id){
+  if(!confirm('Delete this receivable?')) return;
+  DB.receivables=DB.receivables.filter(r=>r.id!==id);
+  saveDB(); renderReceivables();
+}
+
+function openPaymentModal(id){
+  const rec=DB.receivables.find(r=>r.id===id);
+  if(!rec) return;
+  const balance=rec.amount-rec.paid;
+  document.getElementById('pay-modal-body').innerHTML=`
+    <div class="alert-bar warning">
+      <strong>${rec.customer}</strong> — Outstanding: ${fmt(balance)}
+    </div>
+    <div class="form-grid">
+      <div class="form-group"><label>Payment Amount (SAR)</label>
+        <input type="number" id="pay-amount" placeholder="0.00" max="${balance}">
+      </div>
+      <div class="form-group"><label>Payment Date</label>
+        <input type="date" id="pay-date" value="${today()}">
+      </div>
+    </div>
+    <div class="form-group mb-4"><label>Note</label>
+      <input id="pay-note" placeholder="Cash / Bank transfer / Cheque...">
+    </div>
+    <div class="flex gap-2">
+      <button class="btn btn-success" onclick="recordPayment('${id}')">✓ Record Payment</button>
+      <button class="btn btn-ghost" onclick="closeModal('pay-modal')">Cancel</button>
+    </div>`;
+  openModal('pay-modal');
+}
+
+function recordPayment(id){
+  const rec=DB.receivables.find(r=>r.id===id);
+  if(!rec) return;
+  const amt=+document.getElementById('pay-amount').value||0;
+  rec.paid+=amt;
+  if(!rec.payments) rec.payments=[];
+  rec.payments.push({amount:amt,date:document.getElementById('pay-date').value,note:document.getElementById('pay-note').value});
+  saveDB(); closeModal('pay-modal'); renderReceivables();
+}
+
+function renderReceivables(){
+  const data=DB.receivables.sort((a,b)=>b.date.localeCompare(a.date));
+  const totalInvoiced=data.reduce((s,r)=>s+r.amount,0);
+  const totalPaid=data.reduce((s,r)=>s+r.paid,0);
+  const outstanding=totalInvoiced-totalPaid;
+  const overdue=data.filter(r=>r.amount-r.paid>0).length;
+
+  document.getElementById('rec-kpis').innerHTML=`
+    <div class="kpi red"><span class="kpi-icon">⚠</span>
+      <div class="kpi-label">Total Outstanding</div>
+      <div class="kpi-value" style="color:var(--red)">${fmt(outstanding)}</div>
+      <div class="kpi-sub">${overdue} unpaid invoices</div>
+    </div>
+    <div class="kpi"><span class="kpi-icon">📋</span>
+      <div class="kpi-label">Total Invoiced</div>
+      <div class="kpi-value">${fmt(totalInvoiced)}</div>
+      <div class="kpi-sub">All receivables</div>
+    </div>
+    <div class="kpi green"><span class="kpi-icon">✓</span>
+      <div class="kpi-label">Total Collected</div>
+      <div class="kpi-value" style="color:var(--green)">${fmt(totalPaid)}</div>
+      <div class="kpi-sub">Payments received</div>
+    </div>
+    <div class="kpi"><span class="kpi-icon">📈</span>
+      <div class="kpi-label">Collection Rate</div>
+      <div class="kpi-value">${totalInvoiced?Math.round(totalPaid/totalInvoiced*100):0}%</div>
+      <div class="kpi-sub">Paid vs invoiced</div>
+    </div>`;
+
+  // Badge for nav
+  document.getElementById('debt-badge').textContent=overdue||'';
+  document.getElementById('debt-badge').style.display=overdue?'':'none';
+
+  const tbody=document.getElementById('rec-tbody');
+  if(!data.length){
+    tbody.innerHTML='<tr><td colspan="8" class="empty-state">No receivables logged</td></tr>';
+    return;
+  }
+  tbody.innerHTML=data.map(r=>{
+    const balance=r.amount-r.paid;
+    let status='Paid',badge='badge-green';
+    if(balance>0&&r.paid===0){status='Unpaid';badge='badge-red'}
+    else if(balance>0){status='Partial';badge='badge-yellow'}
+    return `<tr>
+      <td class="mono text-accent">${r.invNo}</td>
+      <td class="mono">${r.date}</td>
+      <td class="bold">${r.customer}</td>
+      <td class="amount">${fmtN(r.amount)}</td>
+      <td class="amount positive">${fmtN(r.paid)}</td>
+      <td class="amount ${balance>0?'negative':''}">${fmtN(balance)}</td>
+      <td><span class="badge ${badge}">${status}</span></td>
+      <td class="flex gap-2" style="flex-wrap:nowrap">
+        ${balance>0?`<button class="btn btn-success btn-sm" onclick="openPaymentModal('${r.id}')">+ Pay</button>`:''}
+        <button class="btn btn-danger btn-sm" onclick="deleteReceivable('${r.id}')">🗑</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════
+//  MODULE 5 — PAYROLL
+// ═══════════════════════════════════════════════
+function prefillSalary(){
+  const did=document.getElementById('p-driver').value;
+  const driver=DB.drivers.find(d=>d.id===did);
+  if(driver) document.getElementById('p-base').value=driver.baseSalary;
+  calcNetSalary();
+}
+
+function calcNetSalary(){
+  const base=+document.getElementById('p-base').value||0;
+  const ot=+document.getElementById('p-ot').value||0;
+  const ded=+document.getElementById('p-ded').value||0;
+  document.getElementById('p-net-display').textContent=fmt(base+ot-ded);
+}
+
+function savePayroll(){
+  const did=document.getElementById('p-driver').value;
+  const driver=DB.drivers.find(d=>d.id===did);
+  const base=+document.getElementById('p-base').value||0;
+  const ot=+document.getElementById('p-ot').value||0;
+  const ded=+document.getElementById('p-ded').value||0;
+  DB.payroll.push({
+    id:uid(),
+    driverId:did,
+    driverName:driver?driver.name:'Unknown',
+    month:document.getElementById('p-month').value,
+    working:+document.getElementById('p-working').value||0,
+    absent:+document.getElementById('p-absent').value||0,
+    base,overtime:ot,deductions:ded,
+    net:base+ot-ded,
+    notes:document.getElementById('p-notes').value
+  });
+  saveDB(); closeModal('payroll-modal'); renderPayroll();
+}
+
+function deletePayroll(id){
+  if(!confirm('Delete this payroll record?')) return;
+  DB.payroll=DB.payroll.filter(r=>r.id!==id);
+  saveDB(); renderPayroll();
+}
+
+function showPayslip(id){
+  const r=DB.payroll.find(p=>p.id===id);
+  if(!r) return;
+  const content=document.getElementById('payslip-content');
+  content.innerHTML=`
+    <div class="payslip">
+      <div class="payslip-header">
+        <div style="display:flex;justify-content:space-between;align-items:start">
+          <div>
+            <div style="font-size:20px;font-weight:800;color:var(--accent)">⚙ AL-MA'DAN FLEET</div>
+            <div style="font-size:11px;color:var(--text-muted);font-family:var(--font-mono)">PAYSLIP · ${r.month}</div>
+          </div>
+          <div style="text-align:right;font-family:var(--font-ar);font-size:14px;color:var(--text-muted)">كشف الراتب</div>
+        </div>
+      </div>
+      <div class="payslip-row"><span style="color:var(--text-muted)">Employee</span><span class="bold">${r.driverName}</span></div>
+      <div class="payslip-row"><span style="color:var(--text-muted)">Period</span><span class="mono">${r.month}</span></div>
+      <div class="payslip-row"><span style="color:var(--text-muted)">Working Days</span><span class="mono">${r.working} days</span></div>
+      <div class="payslip-row"><span style="color:var(--text-muted)">Absent Days</span><span class="mono">${r.absent} days</span></div>
+      <div class="payslip-row" style="border-top:2px solid var(--border);margin-top:4px">
+        <span style="color:var(--text-muted)">Base Salary</span><span class="amount">${fmt(r.base)}</span>
+      </div>
+      <div class="payslip-row"><span style="color:var(--green)">+ Overtime</span><span class="amount positive">${fmt(r.overtime)}</span></div>
+      <div class="payslip-row"><span style="color:var(--red)">− Deductions</span><span class="amount negative">${fmt(r.deductions)}</span></div>
+      <div class="payslip-total"><span>NET PAY</span><span style="color:var(--accent)">${fmt(r.net)}</span></div>
+      ${r.notes?`<div class="payslip-row" style="font-size:12px;color:var(--text-muted)">Notes: ${r.notes}</div>`:''}
+    </div>`;
+  openModal('payslip-modal');
+}
+
+function renderPayroll(){
+  // Populate driver select in modal
+  const sel=document.getElementById('p-driver');
+  sel.innerHTML=DB.drivers.map(d=>`<option value="${d.id}">${d.name}</option>`).join('');
+
+  const filterSel=document.getElementById('driver-filter');
+  filterSel.innerHTML='<option value="">All Drivers</option>'+
+    DB.drivers.map(d=>`<option value="${d.id}">${d.name}</option>`).join('');
+
+  // Driver profile cards
+  const profiles=document.getElementById('driver-profiles');
+  profiles.innerHTML=DB.drivers.map(d=>{
+    const records=DB.payroll.filter(r=>r.driverId===d.id);
+    const totalPaid=records.reduce((s,r)=>s+r.net,0);
+    const lastMonth=records.sort((a,b)=>b.month.localeCompare(a.month))[0];
+    const initials=d.name.split(' ').slice(0,2).map(n=>n[0]).join('');
+    return `<div class="driver-card">
+      <div class="driver-avatar">${initials}</div>
+      <div style="font-size:18px;font-weight:800;margin-bottom:4px">${d.name}</div>
+      <div style="font-size:12px;color:var(--text-muted);font-family:var(--font-mono);margin-bottom:12px">
+        ID: ${d.id} · Since ${d.hireDate} · Base: ${fmt(d.baseSalary)}
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div style="background:var(--bg-input);border-radius:8px;padding:10px">
+          <div style="font-size:10px;color:var(--text-muted);font-family:var(--font-mono)">TOTAL PAID</div>
+          <div style="font-size:15px;font-weight:700;color:var(--accent)">${fmt(totalPaid)}</div>
+        </div>
+        <div style="background:var(--bg-input);border-radius:8px;padding:10px">
+          <div style="font-size:10px;color:var(--text-muted);font-family:var(--font-mono)">LAST SALARY</div>
+          <div style="font-size:15px;font-weight:700">${lastMonth?fmt(lastMonth.net):'—'}</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  renderPayrollTable();
+}
+
+function renderPayrollTable(){
+  const filterVal=document.getElementById('driver-filter').value;
+  const data=DB.payroll
+    .filter(r=>!filterVal||r.driverId===filterVal)
+    .sort((a,b)=>b.month.localeCompare(a.month));
+  const tbody=document.getElementById('payroll-tbody');
+  if(!data.length){
+    tbody.innerHTML='<tr><td colspan="9" class="empty-state">No payroll records yet</td></tr>';
+    return;
+  }
+  tbody.innerHTML=data.map(r=>`
+    <tr>
+      <td class="mono">${r.month}</td>
+      <td class="bold">${r.driverName}</td>
+      <td class="mono">${r.working} days</td>
+      <td class="mono ${r.absent>0?'text-red':''}">${r.absent} days</td>
+      <td class="amount">${fmtN(r.base)}</td>
+      <td class="amount positive">${fmtN(r.overtime)}</td>
+      <td class="amount negative">${fmtN(r.deductions)}</td>
+      <td class="amount text-accent" style="font-size:15px;font-weight:800">${fmtN(r.net)}</td>
+      <td class="flex gap-2">
+        <button class="btn btn-ghost btn-sm" onclick="showPayslip('${r.id}')">📄 Slip</button>
+        <button class="btn btn-danger btn-sm" onclick="deletePayroll('${r.id}')">🗑</button>
+      </td>
+    </tr>`).join('');
+}
+
+// ═══════════════════════════════════════════════
+//  MODULE 6 — DASHBOARD
+// ═══════════════════════════════════════════════
+let dashRange='month';
+window.dashCharts={};
+
+function setDashFilter(el,range){
+  document.querySelectorAll('#dash-filter .filter-pill').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  dashRange=range;
+  renderDashboard();
+}
+
+function getDateBounds(range){
+  const now=new Date();
+  const y=now.getFullYear(),m=now.getMonth();
+  if(range==='month') return [new Date(y,m,1),new Date(y,m+1,0)];
+  if(range==='quarter'){
+    const q=Math.floor(m/3);
+    return [new Date(y,q*3,1),new Date(y,q*3+3,0)];
+  }
+  if(range==='year') return [new Date(y,0,1),new Date(y,11,31)];
+  return [new Date('2000-01-01'),new Date('2099-12-31')];
+}
+
+function inRange(dateStr,range){
+  const [start,end]=getDateBounds(range);
+  const d=new Date(dateStr);
+  return d>=start&&d<=end;
+}
+
+function renderDashboard(){
+  document.getElementById('dash-date').textContent=new Date().toLocaleDateString('en-SA',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+  const incFiltered=DB.income.filter(r=>inRange(r.date,dashRange));
+  const expFiltered=DB.expenses.filter(r=>inRange(r.date,dashRange));
+  const totalInc=incFiltered.reduce((s,r)=>s+r.net,0);
+  const totalExp=expFiltered.reduce((s,r)=>s+r.amount,0);
+  const netProfit=totalInc-totalExp;
+  const outstanding=DB.receivables.reduce((s,r)=>s+Math.max(0,r.amount-r.paid),0);
+
+  // Fleet utilization: % of vehicles with income in range
+  const activeVehicles=new Set(incFiltered.map(r=>r.vehicle)).size;
+  const utilization=Math.round(activeVehicles/3*100);
+
+  document.getElementById('dash-kpis').innerHTML=`
+    <div class="kpi green"><span class="kpi-icon">💰</span>
+      <div class="kpi-label">Net Income</div>
+      <div class="kpi-value">${fmt(totalInc)}</div>
+      <div class="kpi-sub">After deductions</div>
+    </div>
+    <div class="kpi red"><span class="kpi-icon">📉</span>
+      <div class="kpi-label">Total Expenses</div>
+      <div class="kpi-value">${fmt(totalExp)}</div>
+      <div class="kpi-sub">All costs</div>
+    </div>
+    <div class="kpi ${netProfit>=0?'green':'red'}"><span class="kpi-icon">📊</span>
+      <div class="kpi-label">Net Profit</div>
+      <div class="kpi-value" style="color:${netProfit>=0?'var(--green)':'var(--red)'}">${fmt(netProfit)}</div>
+      <div class="kpi-sub">${netProfit>=0?'Profitable':'Loss'} period</div>
+    </div>
+    <div class="kpi red"><span class="kpi-icon">⚠</span>
+      <div class="kpi-label">Outstanding</div>
+      <div class="kpi-value" style="color:var(--red)">${fmt(outstanding)}</div>
+      <div class="kpi-sub">Total receivables due</div>
+    </div>
+    <div class="kpi blue"><span class="kpi-icon">🚛</span>
+      <div class="kpi-label">Fleet Utilization</div>
+      <div class="kpi-value">${utilization}%</div>
+      <div class="kpi-sub">${activeVehicles}/3 vehicles active</div>
+    </div>`;
+
+  // Charts
+  buildMonthlyChart();
+  buildVehicleChart(incFiltered);
+  buildAgingChart();
+  buildExpenseChart(expFiltered);
+  renderRecentActivity();
+}
+
+function getChartColors(){
+  const isDark=document.documentElement.dataset.theme!=='light';
+  return{
+    grid: isDark?'rgba(255,255,255,0.05)':'rgba(0,0,0,0.08)',
+    text: isDark?'#8fa3c4':'#4a6080',
+    tooltipBg: isDark?'#1a2234':'#ffffff',
+    tooltipBorder: isDark?'#2a3a56':'#d1dbe8',
+    tooltipText: isDark?'#e8edf5':'#0f1e35'
+  };
+}
+
+function chartDefaults(){
+  const c=getChartColors();
+  return{
+    plugins:{legend:{labels:{color:c.text,font:{family:'DM Mono',size:11}}},
+      tooltip:{backgroundColor:c.tooltipBg,borderColor:c.tooltipBorder,borderWidth:1,
+        titleColor:c.tooltipText,bodyColor:c.tooltipText,padding:12}},
+    scales:{
+      x:{grid:{color:c.grid},ticks:{color:c.text,font:{family:'DM Mono',size:11}}},
+      y:{grid:{color:c.grid},ticks:{color:c.text,font:{family:'DM Mono',size:11},
+        callback:v=>'SAR '+Number(v).toLocaleString()}}
+    }
+  };
+}
+
+function buildMonthlyChart(){
+  const months=[];
+  const now=new Date();
+  for(let i=5;i>=0;i--){
+    const d=new Date(now.getFullYear(),now.getMonth()-i,1);
+    months.push(d.toISOString().slice(0,7));
+  }
+  const inc=months.map(m=>DB.income.filter(r=>getMonth(r.date)===m).reduce((s,r)=>s+r.net,0));
+  const exp=months.map(m=>DB.expenses.filter(r=>getMonth(r.date)===m).reduce((s,r)=>s+r.amount,0));
+  const labels=months.map(m=>{const d=new Date(m+'-01');return d.toLocaleDateString('en-SA',{month:'short',year:'2-digit'})});
+
+  if(window.dashCharts.monthly) window.dashCharts.monthly.destroy();
+  const ctx=document.getElementById('chart-monthly').getContext('2d');
+  const def=chartDefaults();
+  window.dashCharts.monthly=new Chart(ctx,{
+    type:'bar',
+    data:{labels,
+      datasets:[
+        {label:'Net Income',data:inc,backgroundColor:'rgba(34,197,94,0.7)',borderColor:'#22c55e',borderWidth:1,borderRadius:4},
+        {label:'Expenses',data:exp,backgroundColor:'rgba(239,68,68,0.7)',borderColor:'#ef4444',borderWidth:1,borderRadius:4}
+      ]},
+    options:{responsive:true,maintainAspectRatio:false,...def}
+  });
+}
+
+function buildVehicleChart(filtered){
+  const vehicles=['JCB','Bobcat','Lowbed'];
+  const vals=vehicles.map(v=>filtered.filter(r=>r.vehicle===v).reduce((s,r)=>s+r.net,0));
+  if(window.dashCharts.vehicles) window.dashCharts.vehicles.destroy();
+  const ctx=document.getElementById('chart-vehicles').getContext('2d');
+  const c=getChartColors();
+  window.dashCharts.vehicles=new Chart(ctx,{
+    type:'doughnut',
+    data:{labels:vehicles,
+      datasets:[{data:vals,
+        backgroundColor:['rgba(240,165,0,0.8)','rgba(59,130,246,0.8)','rgba(139,92,246,0.8)'],
+        borderColor:['#f0a500','#3b82f6','#8b5cf6'],borderWidth:2}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'65%',
+      plugins:{legend:{labels:{color:c.text,font:{family:'DM Mono',size:11}}},
+        tooltip:{backgroundColor:c.tooltipBg,borderColor:c.tooltipBorder,borderWidth:1,
+          titleColor:c.tooltipText,bodyColor:c.tooltipText,padding:12,
+          callbacks:{label:ctx=>'SAR '+Number(ctx.raw).toLocaleString('en-SA',{minimumFractionDigits:2})}}}}
+  });
+}
+
+function buildAgingChart(){
+  const now=new Date();
+  const buckets=[0,0,0,0];
+  DB.receivables.forEach(r=>{
+    const balance=r.amount-r.paid;
+    if(balance<=0) return;
+    const days=Math.floor((now-new Date(r.date))/86400000);
+    if(days<=30) buckets[0]+=balance;
+    else if(days<=60) buckets[1]+=balance;
+    else if(days<=90) buckets[2]+=balance;
+    else buckets[3]+=balance;
+  });
+  if(window.dashCharts.aging) window.dashCharts.aging.destroy();
+  const ctx=document.getElementById('chart-aging').getContext('2d');
+  const def=chartDefaults();
+  window.dashCharts.aging=new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels:['0-30 days','31-60 days','61-90 days','90+ days'],
+      datasets:[{label:'Outstanding (SAR)',data:buckets,
+        backgroundColor:['rgba(34,197,94,0.7)','rgba(234,179,8,0.7)','rgba(249,115,22,0.7)','rgba(239,68,68,0.7)'],
+        borderColor:['#22c55e','#eab308','#f97316','#ef4444'],
+        borderWidth:1,borderRadius:4}]},
+    options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',...def,
+      scales:{...def.scales,y:{...def.scales.y,ticks:{color:getChartColors().text,font:{family:'DM Mono',size:11}}},
+        x:{...def.scales.x,ticks:{color:getChartColors().text,font:{family:'DM Mono',size:11},callback:v=>'SAR '+Number(v).toLocaleString()}}}}
+  });
+}
+
+function buildExpenseChart(filtered){
+  const cats=['Fuel','Maintenance','Driver Salary','Insurance','Government Fees','Miscellaneous'];
+  const vals=cats.map(c=>filtered.filter(r=>r.cat===c).reduce((s,r)=>s+r.amount,0));
+  const colors=['rgba(249,115,22,0.8)','rgba(59,130,246,0.8)','rgba(139,92,246,0.8)',
+    '#06b6d4CC','rgba(236,72,153,0.8)','rgba(107,114,128,0.8)'];
+  if(window.dashCharts.expenses) window.dashCharts.expenses.destroy();
+  const ctx=document.getElementById('chart-expenses').getContext('2d');
+  const c=getChartColors();
+  window.dashCharts.expenses=new Chart(ctx,{
+    type:'pie',
+    data:{labels:cats,datasets:[{data:vals,backgroundColor:colors,borderWidth:2,borderColor:c.tooltipBorder}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:c.text,font:{family:'DM Mono',size:10}}},
+        tooltip:{backgroundColor:c.tooltipBg,borderColor:c.tooltipBorder,borderWidth:1,
+          titleColor:c.tooltipText,bodyColor:c.tooltipText,padding:12,
+          callbacks:{label:ctx=>'SAR '+Number(ctx.raw).toLocaleString('en-SA',{minimumFractionDigits:2})}}}}
+  });
+}
+
+function renderRecentActivity(){
+  const items=[];
+  DB.income.slice(-4).forEach(r=>items.push({date:r.date,text:`Invoice ${r.invNo} — ${r.customer}`,amount:r.net,type:'income'}));
+  DB.expenses.slice(-3).forEach(r=>items.push({date:r.date,text:`${r.cat}: ${r.desc||''}`,amount:r.amount,type:'expense'}));
+  items.sort((a,b)=>b.date.localeCompare(a.date));
+  const el=document.getElementById('recent-activity');
+  if(!items.length){el.innerHTML='<div class="empty-state">No activity yet</div>';return}
+  el.innerHTML=items.slice(0,8).map(it=>`
+    <div class="payslip-row" style="font-size:13px">
+      <div>
+        <span class="mono" style="color:var(--text-muted);font-size:11px">${it.date}</span>
+        <span style="margin-left:12px">${it.text}</span>
+      </div>
+      <span class="amount ${it.type==='income'?'positive':'negative'}">${it.type==='income'?'+':'-'}${fmtN(it.amount)}</span>
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════
+(function init(){
+  loadDB();
+  preloadSampleData();
+
+  // Apply saved theme
+  const saved=localStorage.getItem('theme');
+  if(saved) document.documentElement.dataset.theme=saved;
+
+  // Set today's date in forms
+  document.querySelectorAll('input[type=date]').forEach(el=>{el.value=today()});
+  const pm=document.getElementById('p-month');
+  if(pm) pm.value=currentMonth();
+
+  renderDashboard();
+  renderReceivables(); // to set badge
+})();
+</script>
+</body>
+</html>
